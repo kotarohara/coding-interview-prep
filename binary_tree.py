@@ -33,20 +33,49 @@ class Tree(object):
                         current_node = current_node.right
 
     def _visit(self, node):
-        return [node.value]
+        return node.value
 
-    def _iterate(self, node):
-        ret = []
+    def _traverse(self, node):
         if node.left:
-            ret += self._iterate(node.left)
-        ret += self._visit(node)
+            for elem in self._traverse(node.left):
+                yield elem
+        yield self._visit(node)
         if node.right:
-            ret += self._iterate(node.right)
-        return ret
+            for elem in self._traverse(node.right):
+                yield elem
 
     def traverse(self):
-        for value in self._iterate(self.root):
-            print value
+        if self.root:
+            return self._traverse(self.root)
+        else:
+            return None
+
+    def _traverse_range(self, node, lower_bound, upper_bound):
+        if node.left:
+            for elem in self._traverse_range(node.left, lower_bound, upper_bound):
+                yield elem
+
+        value = self._visit(node)
+        if lower_bound is None and upper_bound is None:
+            yield value
+        elif lower_bound is None and value < upper_bound:
+            yield value
+        elif lower_bound < value and upper_bound is None:
+            yield value
+        elif lower_bound < value and value < upper_bound:
+            yield value
+
+        if node.right:
+            for elem in self._traverse_range(node.right, lower_bound, upper_bound):
+                yield elem
+
+
+    def traverse_range(self, lower_bound, upper_bound):
+        if self.root:
+            return self._traverse_range(self.root, lower_bound, upper_bound)
+        else:
+            return None
+
 
     def find_lesser_and_greater(self, value):
         if self.root is None:
@@ -91,7 +120,6 @@ class Tree(object):
             else:
                 current_node = current_node.left
 
-
     def _find_greater_node(self, value):
         current_node = self.root
         while True:
@@ -113,10 +141,20 @@ class Tree(object):
 
 if __name__ == "__main__":
     tree = Tree()
-    # values = [21, 1, 26, 45, 29, 28, 2, 9, 16, 49, 39, 27, 43, 34, 46, 40]
+    values = [21, 1, 26, 45, 29, 28, 2, 9, 16, 49, 39, 27, 43, 34, 46, 40]
 
-    values = [4, 2, 1, 3, 6, 5, 7]
+    # values = [4, 2, 1, 3, 6, 5, 7]
     for value in values:
         tree.add(Node(value))
 
-    print tree.find_lesser_and_greater(8)
+    l = [None] + list(tree.traverse())
+    print l
+    target = 100
+    for i in range(1, len(l)):
+        if target <= l[i]:
+            print l[i - 1], l[i]
+            break
+    else:
+        print l[-1], None
+
+
